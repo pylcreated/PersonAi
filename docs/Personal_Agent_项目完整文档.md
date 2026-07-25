@@ -23,7 +23,7 @@ Personal Agent 是一个本地、单用户、隐私优先的个人 AI 助手。�
 | 默认模型 | Ollama `gemma3:12b` |
 | 数据库 | 本地 SQLite |
 | API 版本 | 7 |
-| 自动化测试 | 84 passed |
+| 自动化测试 | 93 passed |
 
 核心原则：
 
@@ -98,6 +98,16 @@ Personal Agent 是一个本地、单用户、隐私优先的个人 AI 助手。�
        ↓
 相关问题中按需检索
 ```
+
+正式记忆的 Web 用户控制层遵循：
+
+```text
+UI → API → MemoryManagementService → AgentRepository → SQLite
+```
+
+用户可以筛选状态、查看来源与 Evidence、查看 JSON、编辑类型/内容/重要性/
+状态，并通过现有生命周期执行软删除。候选审核、Provenance 和 Evidence
+结构保持不变。
 
 ### 2.5 Tool 调用
 
@@ -217,6 +227,8 @@ Personal Agent 服务
 | GET | `/api/dashboard` | UI 聚合数据 |
 | GET | `/api/daily?date=YYYY-MM-DD` | 最近或指定日报 |
 | GET | `/api/backups` | 备份列表 |
+| GET | `/api/memory?status=...` | 查询正式记忆 |
+| GET | `/api/memory/{id}` | 查看记忆来源和 Evidence |
 
 操作接口：
 
@@ -230,6 +242,8 @@ Personal Agent 服务
 | POST | `/api/memory/analyze` | 补做聊天分析 |
 | POST | `/api/memories/{id}/accept` | 保存候选记忆 |
 | POST | `/api/memories/{id}/reject` | 忽略候选记忆 |
+| PUT | `/api/memory/{id}` | 修改正式记忆 |
+| DELETE | `/api/memory/{id}` | 软删除正式记忆 |
 | POST | `/api/settings/model` | 保存模型名称 |
 | POST | `/api/settings/reminder` | 修改提醒时间 |
 | POST | `/api/backups` | 创建备份 |
@@ -485,7 +499,7 @@ Executor 通过 ToolManager 顺序执行
 当前结果：
 
 ```text
-84 passed
+93 passed
 0 failed
 ```
 

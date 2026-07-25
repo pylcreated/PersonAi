@@ -163,6 +163,25 @@ class PersonalAgentWebServer:
             return {"candidate_id": candidate_id, "rejected": True}
         raise ValueError("不支持的审核操作")
 
+    def list_memories(self, status: str = "active") -> dict[str, Any]:
+        return {
+            "status": status,
+            "memories": self.application.memory_management.list(status),
+        }
+
+    def memory_detail(self, memory_id: int) -> dict[str, Any]:
+        return self.application.memory_management.detail(memory_id)
+
+    def update_memory(
+        self,
+        memory_id: int,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self.application.memory_management.update(memory_id, payload)
+
+    def delete_memory(self, memory_id: int) -> dict[str, Any]:
+        return self.application.memory_management.delete(memory_id)
+
     def update_reminder(self, payload: dict[str, Any]) -> dict[str, Any]:
         try:
             hour = int(payload.get("hour"))
@@ -244,7 +263,47 @@ def create_handler(service: PersonalAgentWebServer) -> type[BaseHTTPRequestHandl
             if path == "/api/backups":
                 self._api_call(service.list_backups)
                 return
+            if path == "/api/memory":
+                requested_status = parse_qs(parsed.query).get(
+                    "status",
+                    ["active"],
+                )[0]
+                self._api_call(service.list_memories, requested_status)
+                return
+            memory_match = re.fullmatch(r"/api/memory/(\d+)", path)
+            if memory_match:
+                self._api_call(
+                    service.memory_detail,
+                    int(memory_match.group(1)),
+                )
+                return
             self._serve_static(path)
+
+        def do_PUT(self) -> None:
+            path = urlparse(self.path).path
+            payload = self._read_json()
+            if payload is None:
+                return
+            memory_match = re.fullmatch(r"/api/memory/(\d+)", path)
+            if memory_match:
+                self._api_call(
+                    service.update_memory,
+                    int(memory_match.group(1)),
+                    payload,
+                )
+                return
+            self._send_json({"error": "接口不存在"}, HTTPStatus.NOT_FOUND)
+
+        def do_DELETE(self) -> None:
+            path = urlparse(self.path).path
+            memory_match = re.fullmatch(r"/api/memory/(\d+)", path)
+            if memory_match:
+                self._api_call(
+                    service.delete_memory,
+                    int(memory_match.group(1)),
+                )
+                return
+            self._send_json({"error": "接口不存在"}, HTTPStatus.NOT_FOUND)
 
         def do_POST(self) -> None:
             path = urlparse(self.path).path

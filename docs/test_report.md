@@ -7,7 +7,7 @@ Date: 2026-07-25
 Platform: Windows
 Python: 3.14.2
 Test runner: pytest 9.1.1
-Total: 84 passed
+Total: 93 passed
 Failed: 0
 Duration: 1.55s（本次本地运行）
 ```
@@ -21,7 +21,7 @@ Duration: 1.55s（本次本地运行）
 结果：
 
 ```text
-84 passed
+93 passed
 ```
 
 ## Test Architecture

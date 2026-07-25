@@ -10,12 +10,18 @@ const state = {
   loading: false,
   modalMode: null,
   analysisPoll: null,
+  managedMemoryStatus: "active",
+  managedMemoriesLoaded: false,
+  managedMemories: [],
+  currentMemory: null,
 };
 
 const formModal = document.getElementById("formModal");
 const modalForm = document.getElementById("modalForm");
 const modalTextInput = document.getElementById("modalTextInput");
 const modalGoalSelect = document.getElementById("modalGoalSelect");
+const memoryModal = document.getElementById("memoryModal");
+const memoryEditForm = document.getElementById("memoryEditForm");
 
 function showToast(message, isError = false) {
   toast.textContent = message;
@@ -56,6 +62,9 @@ function switchPage(name) {
   } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+  if (name === "memory") {
+    loadMemoryManagement({ quiet: true });
+  }
 }
 
 function scrollChatToBottom(behavior = "auto") {
@@ -93,6 +102,19 @@ function formatChineseDate(value) {
     day: "numeric",
     weekday: "long",
   }).replace("星期", " · 星期");
+}
+
+function formatDateTime(value) {
+  if (!value) return "未记录";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+  return parsed.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function renderTasks(tasks) {
@@ -226,6 +248,16 @@ function memoryTypeLabel(type) {
   return labels[type] || type || "记忆";
 }
 
+function memoryStatusLabel(status) {
+  const labels = {
+    active: "使用中",
+    archived: "已归档",
+    expired: "已过期",
+    deleted: "已删除",
+  };
+  return labels[status] || status || "未知";
+}
+
 function renderDailySummaries(summaries) {
   const list = document.getElementById("dailySummaryList");
   document.getElementById("dailySummaryCount").textContent = `${summaries.length} 天`;
@@ -308,33 +340,174 @@ function renderMemories(candidates, memories, pendingDates, analysisRunning) {
     });
   }
 
-  const activeList = document.getElementById("activeMemoryList");
-  const activeCount = memories.length;
-  document.getElementById("activeMemoryCount").textContent = `${activeCount} 条`;
-  activeList.replaceChildren();
-  if (!activeCount) {
-    activeList.appendChild(element(
+  if (!state.managedMemoriesLoaded) {
+    renderManagedMemories(memories);
+  }
+}
+
+function renderManagedMemories(memories) {
+  const list = document.getElementById("activeMemoryList");
+  document.getElementById("activeMemoryCount").textContent = `${memories.length} 条`;
+  list.replaceChildren();
+  if (!memories.length) {
+    list.appendChild(element(
       "div",
       "card api-empty large",
-      "还没有正式长期记忆。候选记忆经过你的确认后会保存在这里。",
+      state.managedMemoryStatus === "active"
+        ? "还没有正式长期记忆。候选记忆经过你的确认后会保存在这里。"
+        : "当前状态下没有长期记忆。",
     ));
     return;
   }
   memories.forEach(memory => {
     const item = element("article", "card active-memory-item");
+    item.dataset.memoryId = memory.id;
     const header = element("header");
     header.append(
       element("span", "", memoryTypeLabel(memory.type)),
-      element("small", "", `#${memory.id}`),
+      element("small", "", `#${memory.id} · ${memoryStatusLabel(memory.status)}`),
     );
-    const footer = element(
-      "footer",
-      "",
-      `可信度 ${Math.round(Number(memory.confidence || 0) * 100)}% · 已使用 ${memory.use_count || 0} 次`,
+    const meta = element("div", "active-memory-meta");
+    meta.append(
+      element("span", "", `重要性 ${Math.round(Number(memory.importance || 0) * 100)}%`),
+      element("span", "", `创建 ${formatDateTime(memory.created_at)}`),
+      element("span", "", `来源 ${memory.source || "未记录"}`),
+      element("span", "", `已使用 ${memory.use_count || 0} 次`),
     );
-    item.append(header, element("p", "", memory.content), footer);
-    activeList.appendChild(item);
+    const actions = element("div", "memory-card-actions");
+    [
+      ["view", "查看详情"],
+      ["edit", "编辑"],
+      ["delete", "删除"],
+    ].forEach(([action, label]) => {
+      const button = element("button", "", label);
+      button.type = "button";
+      button.dataset.memoryAction = action;
+      button.dataset.memoryId = memory.id;
+      actions.appendChild(button);
+    });
+    item.append(
+      header,
+      element("p", "", memory.content),
+      meta,
+      actions,
+    );
+    list.appendChild(item);
   });
+}
+
+async function loadMemoryManagement({ quiet = false } = {}) {
+  const filter = document.getElementById("memoryStatusFilter");
+  const status = filter?.value || state.managedMemoryStatus || "active";
+  state.managedMemoryStatus = status;
+  try {
+    const data = await api(`/api/memory?status=${encodeURIComponent(status)}`);
+    state.managedMemories = data.memories || [];
+    state.managedMemoriesLoaded = true;
+    renderManagedMemories(state.managedMemories);
+  } catch (error) {
+    if (!quiet) showToast(error.message, true);
+  }
+}
+
+function memoryMetaItem(label, value) {
+  const item = element("div");
+  item.append(
+    element("small", "", label),
+    element("strong", "", String(value ?? "未记录")),
+  );
+  return item;
+}
+
+function renderMemoryDetail(memory) {
+  state.currentMemory = memory;
+  document.getElementById("memoryModalTitle").textContent = `记忆 #${memory.id}`;
+  document.getElementById("memoryModalStatus").textContent = memoryStatusLabel(memory.status);
+  const meta = document.getElementById("memoryDetailMeta");
+  meta.replaceChildren(
+    memoryMetaItem("类型", memoryTypeLabel(memory.type)),
+    memoryMetaItem("重要性", `${Math.round(Number(memory.importance || 0) * 100)}%`),
+    memoryMetaItem("可信度", `${Math.round(Number(memory.confidence || 0) * 100)}%`),
+    memoryMetaItem("创建时间", formatDateTime(memory.created_at)),
+    memoryMetaItem("更新时间", formatDateTime(memory.updated_at)),
+    memoryMetaItem("来源", memory.source || "未记录"),
+  );
+  document.getElementById("memoryDetailContent").textContent = memory.content;
+
+  const sources = document.getElementById("memorySourceList");
+  sources.replaceChildren();
+  if (!(memory.provenance || []).length) {
+    sources.appendChild(element("p", "", memory.source || "未记录独立来源条目"));
+  } else {
+    memory.provenance.forEach(source => {
+      const item = element("article", "memory-source-item");
+      item.append(
+        element("strong", "", `${source.source_type || "来源"} · ${source.source_id || "未编号"}`),
+        element("p", "", source.created_reason || "未记录创建原因"),
+        element("small", "", formatDateTime(source.created_at)),
+      );
+      sources.appendChild(item);
+    });
+  }
+
+  const evidence = document.getElementById("memoryEvidenceList");
+  evidence.replaceChildren();
+  if (!(memory.evidence || []).length) {
+    evidence.appendChild(element("p", "", "这条记忆没有关联可展示的 Evidence。"));
+  } else {
+    memory.evidence.forEach(source => {
+      const item = element("article", "memory-evidence-item");
+      item.append(
+        element("strong", "", source.claim || source.evidence_type || "Evidence"),
+        element("p", "", source.quote || "未保留原始引用"),
+        element(
+          "small",
+          "",
+          `消息 #${source.message_id || "?"} · ${formatDateTime(source.message_created_at)}`,
+        ),
+      );
+      evidence.appendChild(item);
+    });
+  }
+
+  const jsonView = document.getElementById("memoryJsonView");
+  jsonView.textContent = JSON.stringify(memory, null, 2);
+  jsonView.classList.remove("visible");
+  document.getElementById("memoryJsonButton").textContent = "查看 JSON";
+  document.getElementById("memoryDetailView").hidden = false;
+  memoryEditForm.hidden = true;
+}
+
+async function openMemoryDetail(memoryId, edit = false) {
+  try {
+    const memory = await api(`/api/memory/${memoryId}`);
+    renderMemoryDetail(memory);
+    memoryModal.classList.add("open");
+    memoryModal.setAttribute("aria-hidden", "false");
+    if (edit) openMemoryEdit();
+  } catch (error) {
+    showToast(error.message, true);
+  }
+}
+
+function closeMemoryModal() {
+  memoryModal.classList.remove("open");
+  memoryModal.setAttribute("aria-hidden", "true");
+  state.currentMemory = null;
+  memoryEditForm.hidden = true;
+  document.getElementById("memoryDetailView").hidden = false;
+}
+
+function openMemoryEdit() {
+  const memory = state.currentMemory;
+  if (!memory) return;
+  document.getElementById("memoryTypeInput").value = memory.type;
+  document.getElementById("memoryStatusInput").value = memory.status;
+  document.getElementById("memoryContentInput").value = memory.content;
+  document.getElementById("memoryImportanceInput").value = Number(memory.importance || 0.5);
+  document.getElementById("memoryDetailView").hidden = true;
+  memoryEditForm.hidden = false;
+  setTimeout(() => document.getElementById("memoryContentInput").focus(), 80);
 }
 
 function appendMessage(role, content, time = "刚刚") {
@@ -402,6 +575,12 @@ async function loadDashboard({ quiet = false } = {}) {
   try {
     const data = await api("/api/dashboard");
     renderDashboard(data);
+    if (
+      document.getElementById("page-memory").classList.contains("active")
+      && state.managedMemoriesLoaded
+    ) {
+      await loadMemoryManagement({ quiet: true });
+    }
     status.classList.toggle("offline", !data.model);
     status.querySelector("span").textContent = data.model
       ? "本地服务 · 已连接"
@@ -717,6 +896,95 @@ document.getElementById("memoryReviewList").addEventListener("click", async even
   } catch (error) {
     action.disabled = false;
     showToast(error.message, true);
+  }
+});
+
+async function deleteMemory(memoryId) {
+  if (!window.confirm("确认删除这条长期记忆吗？系统只会把状态改为“已删除”，来源和 Evidence 会继续保留。")) {
+    return;
+  }
+  try {
+    await api(`/api/memory/${memoryId}`, { method: "DELETE" });
+    closeMemoryModal();
+    await loadDashboard({ quiet: true });
+    await loadMemoryManagement({ quiet: true });
+    showToast("记忆已标记为删除");
+  } catch (error) {
+    showToast(error.message, true);
+  }
+}
+
+document.getElementById("memoryStatusFilter").addEventListener("change", async event => {
+  state.managedMemoryStatus = event.target.value;
+  await loadMemoryManagement();
+});
+
+document.getElementById("activeMemoryList").addEventListener("click", async event => {
+  const action = event.target.closest("[data-memory-action]");
+  if (!action) return;
+  const memoryId = Number(action.dataset.memoryId);
+  if (action.dataset.memoryAction === "delete") {
+    await deleteMemory(memoryId);
+    return;
+  }
+  await openMemoryDetail(memoryId, action.dataset.memoryAction === "edit");
+});
+
+document.getElementById("memoryModalClose").addEventListener("click", closeMemoryModal);
+document.getElementById("memoryDoneButton").addEventListener("click", closeMemoryModal);
+document.getElementById("memoryEditButton").addEventListener("click", openMemoryEdit);
+document.getElementById("memoryEditCancel").addEventListener("click", () => {
+  memoryEditForm.hidden = true;
+  document.getElementById("memoryDetailView").hidden = false;
+});
+document.getElementById("memoryJsonButton").addEventListener("click", event => {
+  const view = document.getElementById("memoryJsonView");
+  const visible = view.classList.toggle("visible");
+  event.currentTarget.textContent = visible ? "收起 JSON" : "查看 JSON";
+});
+document.getElementById("memoryDeleteButton").addEventListener("click", async () => {
+  if (state.currentMemory) await deleteMemory(state.currentMemory.id);
+});
+memoryModal.addEventListener("click", event => {
+  if (event.target === memoryModal) closeMemoryModal();
+});
+
+memoryEditForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!state.currentMemory) return;
+  const save = document.getElementById("memorySaveButton");
+  const content = document.getElementById("memoryContentInput").value.trim();
+  if (!content) {
+    showToast("记忆内容不能为空", true);
+    return;
+  }
+  save.disabled = true;
+  save.textContent = "正在保存…";
+  try {
+    const updated = await api(`/api/memory/${state.currentMemory.id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        type: document.getElementById("memoryTypeInput").value,
+        content,
+        importance: Number(document.getElementById("memoryImportanceInput").value),
+        status: document.getElementById("memoryStatusInput").value,
+      }),
+    });
+    renderMemoryDetail(updated);
+    await loadDashboard({ quiet: true });
+    await loadMemoryManagement({ quiet: true });
+    showToast("长期记忆已更新");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    save.disabled = false;
+    save.textContent = "保存修改";
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && memoryModal.classList.contains("open")) {
+    closeMemoryModal();
   }
 });
 

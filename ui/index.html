@@ -219,7 +219,20 @@
           <article class="card review-item"><div class="review-type project">项目</div><div class="review-copy"><small>候选记忆 #17 · 来自 3 条对话</small><h2>Personal Agent 已进入 30 天真实自用验证阶段。</h2><button class="evidence-toggle">查看原始证据 <span>⌄</span></button><div class="evidence-detail">“核心闭环已经完成，下一阶段主要验证真实使用可靠性。”<small>昨天 22:31 · 消息 #827</small></div></div><div class="review-actions"><button class="reject">忽略</button><button class="edit">编辑</button><button class="accept">确认保存</button></div></article>
           <article class="card review-item"><div class="review-type goal">目标</div><div class="review-copy"><small>候选记忆 #16 · 来自 1 条对话</small><h2>近期优先完成产品界面，再开始长期使用测试。</h2><button class="evidence-toggle">查看原始证据 <span>⌄</span></button><div class="evidence-detail">“先完成产品界面，再开始 30 天自用验证。”<small>昨天 21:48 · 消息 #816</small></div></div><div class="review-actions"><button class="reject">忽略</button><button class="edit">编辑</button><button class="accept">确认保存</button></div></article>
         </div>
-        <div class="memory-section-heading active-heading"><div><h2>已保存长期记忆</h2><p>这些记忆会在之后的对话中作为背景信息使用。</p></div><span id="activeMemoryCount">0 条</span></div>
+        <div class="memory-section-heading active-heading">
+          <div><h2>长期记忆管理</h2><p>查看来源、编辑内容或通过生命周期状态移除记忆。</p></div>
+          <div class="memory-heading-actions">
+            <label for="memoryStatusFilter">状态</label>
+            <select id="memoryStatusFilter">
+              <option value="active">使用中</option>
+              <option value="all">全部</option>
+              <option value="archived">已归档</option>
+              <option value="expired">已过期</option>
+              <option value="deleted">已删除</option>
+            </select>
+            <span id="activeMemoryCount">0 条</span>
+          </div>
+        </div>
         <div class="active-memory-grid" id="activeMemoryList"></div>
       </section>
 
@@ -257,7 +270,78 @@
     </section>
   </div>
 
+  <div class="modal-backdrop" id="memoryModal" aria-hidden="true">
+    <section class="form-modal memory-modal" role="dialog" aria-modal="true" aria-labelledby="memoryModalTitle">
+      <button class="modal-close" id="memoryModalClose" type="button" aria-label="关闭">×</button>
+      <p class="eyebrow">LONG-TERM MEMORY</p>
+      <div class="memory-modal-heading">
+        <h2 id="memoryModalTitle">记忆详情</h2>
+        <span id="memoryModalStatus">使用中</span>
+      </div>
+
+      <div id="memoryDetailView">
+        <div class="memory-detail-meta" id="memoryDetailMeta"></div>
+        <section class="memory-detail-section">
+          <h3>内容</h3>
+          <p id="memoryDetailContent"></p>
+        </section>
+        <section class="memory-detail-section">
+          <h3>来源记录</h3>
+          <div id="memorySourceList"></div>
+        </section>
+        <section class="memory-detail-section">
+          <h3>Evidence 与原始引用</h3>
+          <div id="memoryEvidenceList"></div>
+        </section>
+        <pre class="memory-json-view" id="memoryJsonView"></pre>
+        <div class="modal-actions memory-view-actions">
+          <button type="button" class="memory-delete-button" id="memoryDeleteButton">删除</button>
+          <button type="button" class="modal-cancel" id="memoryJsonButton">查看 JSON</button>
+          <button type="button" class="modal-cancel" id="memoryEditButton">编辑</button>
+          <button type="button" class="modal-submit" id="memoryDoneButton">完成</button>
+        </div>
+      </div>
+
+      <form id="memoryEditForm" hidden>
+        <div class="memory-edit-grid">
+          <label class="modal-field">
+            <span>类型</span>
+            <select id="memoryTypeInput">
+              <option value="profile">档案</option>
+              <option value="preference">偏好</option>
+              <option value="goal">目标</option>
+              <option value="project">项目</option>
+              <option value="skill">技能</option>
+              <option value="experience">经历</option>
+            </select>
+          </label>
+          <label class="modal-field">
+            <span>状态</span>
+            <select id="memoryStatusInput">
+              <option value="active">使用中</option>
+              <option value="archived">已归档</option>
+              <option value="expired">已过期</option>
+              <option value="deleted">已删除</option>
+            </select>
+          </label>
+        </div>
+        <label class="modal-field">
+          <span>内容</span>
+          <textarea id="memoryContentInput" maxlength="4000" rows="5"></textarea>
+        </label>
+        <label class="modal-field">
+          <span>重要性（0-1）</span>
+          <input id="memoryImportanceInput" type="number" min="0" max="1" step="0.05">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" id="memoryEditCancel">取消</button>
+          <button type="submit" class="modal-submit" id="memorySaveButton">保存修改</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
-  <script src="./app.js?v=20260725-8"></script>
+  <script src="./app.js?v=20260725-9"></script>
 </body>
 </html>

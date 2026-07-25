@@ -11,7 +11,7 @@ Memory 系统用于从每日聊天中提取可能长期有用的信息，同时�
 - 原始聊天仅在日报和候选记忆都成功写入后删除。
 
 当前版本保持本地、单用户和 SQLite，不引入向量数据库或多 Agent。用户可
-通过 CLI 或本地 Web UI 查看日报、审核候选记忆和浏览已保存记忆。
+通过 CLI 或本地 Web UI 查看日报、审核候选记忆，并完整管理已保存记忆。
 
 ## 数据流
 
@@ -30,6 +30,10 @@ Memory 系统用于从每日聊天中提取可能长期有用的信息，同时�
           memories：正式记忆
               ├─ memory_sources：创建来源和原因
               └─ memory_evidence：继承的日报证据
+              ↓
+       MemoryManagementService
+              ↓
+      用户查看 / 编辑 / 软删除
               ↓
      相关问题触发关键词检索
               ↓
@@ -118,16 +122,35 @@ CLI 使用 `/daily 日期` 查看日报时会同时显示证据、原消息 ID �
 - 待审核候选数量和候选内容。
 - 候选类型、置信度及来源日期。
 - 确认保存与忽略操作。
-- 用户已经确认的活跃长期记忆及使用次数。
+- 正式长期记忆的类型、状态、创建时间、来源和使用次数。
 - 尚未执行每日分析的聊天日期。
+- 正式记忆详情、Provenance、Evidence 和原始消息引用。
+- JSON 查看模式。
+- 类型、内容、重要性和生命周期状态编辑。
+- 软删除以及 active、archived、expired、deleted 状态筛选。
 
 如果存在未处理聊天，页面提供“立即分析未处理聊天”入口。分析在服务端
 通过锁串行执行，UI 在分析期间轮询 `/api/dashboard`，完成后刷新日报、
 候选和长期记忆。没有候选不一定是错误：当日报已生成但模型没有发现适合
 跨天保留的信息时，候选列表应为空。
 
-当前 Web UI 支持接受和拒绝候选；候选编辑、强制接受冲突、归档、过期和
-软删除仍通过 CLI 完成。
+正式记忆的 Web 管理遵循：
+
+```text
+UI
+ ↓
+Web API
+ ↓
+MemoryManagementService
+ ↓
+AgentRepository
+ ↓
+SQLite
+```
+
+删除不会执行 SQL `DELETE`，而是通过现有 `MemoryLifecycleManager` 把状态
+改为 `deleted`。`memory_sources` 和 `memory_evidence` 不受影响，因此详情
+页仍能展示创建来源和 Evidence。候选编辑与冲突强制接受仍通过 CLI 完成。
 
 ## 候选生成规则
 
@@ -177,6 +200,7 @@ MemoryRetriever 会先判断问题是否需要个人记忆，再按问题内容�
 | `memory/conflict.py` | 接受前的保守冲突检测 |
 | `memory/retriever.py` | 查询判断、关键词检索、排序和使用记录 |
 | `memory/lifecycle.py` | 正式记忆的归档、过期和删除状态管理 |
+| `memory/service.py` | Web 用户控制层：列表、详情、编辑和软删除 |
 | `memory/repository.py` | 业务持久化接口及 SQLite 适配器 |
 | `memory/database.py` | 表结构、SQL 和事务 |
 | `memory/migrations/` | Schema 版本升级 |
@@ -188,7 +212,7 @@ MemoryRetriever 会先判断问题是否需要个人记忆，再按问题内容�
 - 检索是关键词和启发式排序，不是语义向量检索。
 - 冲突检测只覆盖少量高置信度规则。
 - 尚无批量审核和数据导入导出。
-- Web UI 尚未覆盖候选编辑、冲突强制接受和完整生命周期管理。
+- Web UI 尚未覆盖候选编辑、冲突强制接受和批量记忆操作。
 - CLI 的删除是软删除状态，不是不可恢复的物理删除。
 - 每日分析仍可能受本地模型上下文长度和 JSON 输出质量影响。
 
@@ -203,4 +227,5 @@ MemoryRetriever 会先判断问题是否需要个人记忆，再按问题内容�
 测试使用共享内存 SQLite，不修改真实的
 `data/database/goals_assistant.db`。覆盖日报事务、候选审批、编辑与拒绝、
 Evidence 原文校验、事务回滚、Memory Provenance、冲突确认、检索注入、
-无关问题跳过记忆、软删除排除和 CLI 审批入口。
+无关问题跳过记忆、Web Memory 查询/修改/软删除、状态变化、来源信息返回
+和 CLI 审批入口。

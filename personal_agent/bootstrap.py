@@ -24,6 +24,7 @@ from personal_agent.memory import (
     DatabaseBackupManager,
     DailyMemoryAnalyzer,
     MemoryManager,
+    MemoryManagementService,
     SQLiteAgentRepository,
 )
 from personal_agent.memory import database
@@ -71,6 +72,10 @@ def create_application() -> LocalCLI:
         MemoryConflictDetector(),
     )
     memory_lifecycle = MemoryLifecycleManager(repository)
+    memory_management = MemoryManagementService(
+        repository,
+        memory_lifecycle,
+    )
     workspace_root = Path(__file__).resolve().parents[1]
     tool_state_root = workspace_root / ".personal_agent"
     tool_registry = ToolRegistry()
@@ -142,4 +147,5 @@ def create_application() -> LocalCLI:
         orchestrator=orchestrator,
         task_state=task_state,
         backup_manager=backup_manager,
+        memory_management=memory_management,
     )

@@ -1,5 +1,12 @@
 # Development Log
 
+## 2026-07-25：正式记忆管理 UI
+
+- 保留候选审核、Provenance、Evidence 和生命周期设计。
+- 新增 `MemoryManagementService`，补齐正式记忆查询、详情、编辑和软删除。
+- Web UI 增加状态筛选、来源与 Evidence 详情、JSON 查看和编辑表单。
+- 新增正式记忆 Service 与 HTTP API 测试；自动化测试增加到 93 项。
+
 ## 2026-07-25：本地 Web UI、应用 Tool 与 GitHub 发布
 
 - 增加由 Python 同源服务提供的响应式 Web UI 和 `/api/*` 接口。

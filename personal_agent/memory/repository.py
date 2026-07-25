@@ -93,6 +93,18 @@ class AgentRepository(Protocol):
         memory_types: list[str] | None = None,
     ) -> list[dict[str, object]]: ...
 
+    def memory(self, memory_id: int) -> dict[str, object] | None: ...
+
+    def update_memory(
+        self,
+        memory_id: int,
+        memory_type: str,
+        content: str,
+        importance: float,
+        status: str,
+        updated_at: str,
+    ) -> bool: ...
+
     def search_memories(
         self,
         keywords: list[str],
@@ -262,6 +274,27 @@ class SQLiteAgentRepository:
         memory_types: list[str] | None = None,
     ) -> list[dict[str, object]]:
         return database.list_memories(status, memory_types)
+
+    def memory(self, memory_id: int) -> dict[str, object] | None:
+        return database.get_memory(memory_id)
+
+    def update_memory(
+        self,
+        memory_id: int,
+        memory_type: str,
+        content: str,
+        importance: float,
+        status: str,
+        updated_at: str,
+    ) -> bool:
+        return database.update_memory(
+            memory_id,
+            memory_type,
+            content,
+            importance,
+            status,
+            updated_at,
+        )
 
     def search_memories(
         self,

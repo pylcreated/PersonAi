@@ -18,6 +18,7 @@ from personal_agent.memory.candidate import (
     MemoryConflictError,
 )
 from personal_agent.memory.lifecycle import MemoryLifecycleManager
+from personal_agent.memory.service import MemoryManagementService
 from personal_agent.security import JsonlAuditSink, ScopedPermissionManager
 from personal_agent.tools import ToolCall, ToolManager
 
@@ -72,6 +73,7 @@ class LocalCLI:
         orchestrator: AgentOrchestrator | None = None,
         task_state: TaskStateStore | None = None,
         backup_manager: DatabaseBackupManager | None = None,
+        memory_management: MemoryManagementService | None = None,
     ) -> None:
         self.agent = agent
         self.repository = repository
@@ -86,6 +88,7 @@ class LocalCLI:
         self.orchestrator = orchestrator
         self.task_state = task_state
         self.backup_manager = backup_manager
+        self.memory_management = memory_management
 
     def run(self) -> None:
         self.repository.initialize()

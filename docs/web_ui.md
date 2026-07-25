@@ -67,6 +67,8 @@ http://127.0.0.1:8765
 | GET | `/api/dashboard` | UI 所需的聚合数据 |
 | GET | `/api/daily?date=YYYY-MM-DD` | 最近或指定日期的日报 |
 | GET | `/api/backups` | 本地备份列表 |
+| GET | `/api/memory?status=active|all|archived|expired|deleted` | 正式长期记忆列表 |
+| GET | `/api/memory/{id}` | 正式记忆、Provenance 与 Evidence |
 
 ### 操作接口
 
@@ -83,9 +85,20 @@ http://127.0.0.1:8765
 | POST | `/api/settings/model` | 保存模型名称，重启后生效 |
 | POST | `/api/settings/reminder` | 修改每日提醒小时 |
 | POST | `/api/backups` | 立即创建数据库备份 |
+| PUT | `/api/memory/{id}` | 修改正式记忆的类型、内容、重要性和状态 |
+| DELETE | `/api/memory/{id}` | 将正式记忆软删除为 `deleted` |
 
 所有响应使用 UTF-8 JSON。业务输入错误返回 `400`，未知接口返回 `404`，
 未处理异常返回 `500`。
+
+正式记忆管理不直接从 Web 层写数据库，调用链固定为：
+
+```text
+UI → API → MemoryManagementService → AgentRepository → SQLite
+```
+
+`DELETE` 接口调用现有生命周期管理器，只改变状态，不删除 Provenance 或
+Evidence。
 
 ## 聊天 Tool 联动
 

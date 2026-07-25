@@ -776,6 +776,45 @@ def list_memories(
     return [dict(row) for row in rows]
 
 
+def get_memory(memory_id: int) -> dict[str, object] | None:
+    with connect_db() as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM memories WHERE id = ?",
+            (memory_id,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def update_memory(
+    memory_id: int,
+    memory_type: str,
+    content: str,
+    importance: float,
+    status: str,
+    updated_at: str,
+) -> bool:
+    with connect_db() as conn:
+        cursor = conn.execute(
+            """
+            UPDATE memories
+            SET type = ?, content = ?, importance = ?,
+                status = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                memory_type,
+                content,
+                importance,
+                status,
+                updated_at,
+                memory_id,
+            ),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+
 def search_memories(
     keywords: list[str],
     memory_types: list[str] | None = None,

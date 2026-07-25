@@ -11,7 +11,7 @@
 | 默认模型 | Ollama `gemma3:12b` |
 | 数据库 | 本地 SQLite |
 | 报告日期 | 2026-07-25 |
-| 自动化测试 | 84 passed，0 failed |
+| 自动化测试 | 93 passed，0 failed |
 
 ## 二、项目概述
 
@@ -541,7 +541,7 @@ Ollama 模式不需要 API Key，对话数据不会发送到云端。切换到�
 ### 9.1 当前结果
 
 ```text
-84 passed
+93 passed
 0 failed
 ```
 
