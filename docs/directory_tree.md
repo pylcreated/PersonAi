@@ -36,6 +36,7 @@ PersonalAgent/
 ├── docs/
 │   ├── architecture.md
 │   ├── README.md
+│   ├── Personal_Agent_项目完整文档.md
 │   ├── web_ui.md
 │   ├── memory.md
 │   ├── tools.md

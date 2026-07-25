@@ -28,6 +28,7 @@ http://127.0.0.1:8765
 
 | 文档 | 内容 |
 | --- | --- |
+| [Personal_Agent_项目完整文档.md](Personal_Agent_项目完整文档.md) | 去重整合后的统一项目文档 |
 | [web_ui.md](web_ui.md) | Web UI、API、端口和启动方式 |
 | [architecture.md](architecture.md) | 分层架构与依赖方向 |
 | [directory_tree.md](directory_tree.md) | 当前项目目录 |
@@ -44,4 +45,5 @@ http://127.0.0.1:8765
 记录了早期设计及评审过程，其中可能保留当时尚未实现的能力描述。它们用于
 追溯决策，不作为当前运行方式的权威说明。
 
-当前运行和接口信息以本索引、`web_ui.md`、根目录 `README.md` 及源码为准。
+当前运行和接口信息以“项目完整文档”、本索引、根目录 `README.md` 及源码
+为准。分专题文档用于补充模块细节。

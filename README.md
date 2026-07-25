@@ -73,6 +73,7 @@ http://127.0.0.1:8765
 
 ## 文档
 
+- [项目完整文档](docs/Personal_Agent_项目完整文档.md)
 - [文档索引与当前状态](docs/README.md)
 - [Web UI 与 API](docs/web_ui.md)
 - [架构说明](docs/architecture.md)
