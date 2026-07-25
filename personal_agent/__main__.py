@@ -14,7 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands.add_parser("backups", help="列出可恢复的数据库备份")
     web = subcommands.add_parser("web", help="启动本地 Web UI 和 API")
     web.add_argument("--host", default="127.0.0.1")
-    web.add_argument("--port", type=int, default=8080)
+    web.add_argument("--port", type=int, default=8765)
     restore = subcommands.add_parser("restore", help="从备份恢复数据库")
     restore.add_argument("filename", help="data/backups 中的备份文件名")
     restore.add_argument(

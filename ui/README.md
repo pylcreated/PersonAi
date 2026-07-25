@@ -18,13 +18,13 @@
 
 推荐先双击 `启动项目.bat`，再双击 `打开UI界面.bat`。
 
-也可以在项目根目录手动执行：
+也可以在项目根目录手动启动完整的 Web UI 和 API：
 
 ```powershell
-.\.venv\Scripts\python.exe -m http.server 8080 -d ui
+.\.venv\Scripts\python.exe -m personal_agent web
 ```
 
-然后访问 `http://localhost:8080`。
+然后访问 `http://127.0.0.1:8765`。
 
 页面通过同源 `/api` 接口连接现有 Python 业务层和 SQLite 数据库，无需额外安装前端依赖。
 

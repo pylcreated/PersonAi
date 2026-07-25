@@ -382,7 +382,7 @@ def create_handler(service: PersonalAgentWebServer) -> type[BaseHTTPRequestHandl
 def run_web_server(
     application: Any,
     host: str = "127.0.0.1",
-    port: int = 8080,
+    port: int = 8765,
 ) -> None:
     if not UI_ROOT.joinpath("index.html").is_file():
         raise FileNotFoundError(f"UI 入口不存在：{UI_ROOT / 'index.html'}")
