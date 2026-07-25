@@ -2,7 +2,7 @@
 
 ## 设计目标
 
-Tool 系统为 Agent 提供有限、标准化、可审计、可恢复的本地文件操作能力。
+Tool 系统为 Agent 提供有限、标准化和可审计的本地文件及应用数据操作能力。
 
 三个模块的边界是：
 
@@ -15,14 +15,21 @@ Permission：AI 被允许做什么
 工具实现本身不决定权限。所有操作必须经过 `ToolManager`，依次完成工具
 查找、参数解析、路径范围检查、用户确认、执行和审计。
 
-当前已经接入 Orchestrator：LLM 可以在显式 `/agent run` 请求中生成
-受白名单约束的工具计划，但仍不能直接执行。用户审核完整计划后，
-Executor 才会逐步调用 ToolManager。普通聊天不会自动触发工具。
+当前有两条 Tool 执行路径：
+
+1. 文件操作通过显式 `/tool` 或 `/agent run` 进入。Orchestrator 生成受
+   白名单约束的计划，用户审核完整计划后，Executor 才逐步调用
+   `ToolManager`。
+2. Web/CLI 普通聊天中的明确目标、任务或清单操作由 `ChatToolRunner`
+   识别。模型只能从应用 Tool 白名单生成计划，再由 `ToolManager` 执行并
+   返回逐步结果。
+
+两条路径都不能让模型直接操作文件或数据库。
 
 ## 执行链路
 
 ```text
-用户 CLI 请求
+用户 CLI 请求或聊天操作指令
     ↓
 ToolCall
     ↓
@@ -47,6 +54,8 @@ JsonlAuditSink
 
 ## 当前工具
 
+### 文件工具
+
 | 工具 | 能力 | 权限 |
 | --- | --- | --- |
 | `read_file` | 读取最大 2 MiB 的 UTF-8 文本文件 | read |
@@ -59,6 +68,20 @@ JsonlAuditSink
 
 当前 `convert_file` 不依赖外部程序，因此暂不支持 PDF 和 DOCX。后续可以
 增加转换适配器，但调用外部程序时还必须通过 `execute` 权限。
+
+### 应用工具
+
+| 工具 | 能力 | 权限 |
+| --- | --- | --- |
+| `list_goals` | 查询活跃长期目标及数字 ID | read |
+| `list_tasks` | 查询本周任务、目标关联和完成状态 | read |
+| `create_goal` | 新增长期目标 | write |
+| `add_goal_task` | 向指定长期目标添加一条本周任务 | write |
+| `set_task_completed` | 按任务 ID 设置完成或未完成 | write |
+
+应用 Tool 由 `tools/app_tool.py` 注册在单独的聊天白名单中。它们通过
+`AgentRepository` 操作 SQLite，并使用数据库路径进行权限检查。重复的
+目标任务不会重复写入；不存在的任务 ID 会返回失败。
 
 ## 权限模型
 
@@ -185,7 +208,9 @@ delete
 | `tools/base.py` | Tool、ToolCall、ToolAuthorization、ToolResult 协议 |
 | `tools/registry.py` | 工具注册和能力描述 |
 | `tools/manager.py` | 唯一安全执行入口 |
+| `tools/app_tool.py` | 目标和任务的查询、创建及状态更新 |
 | `tools/file_tool.py` | 文件工具、备份、回收与转换实现 |
+| `core/tool_runner.py` | 聊天操作意图识别、计划执行与结果汇总 |
 | `security/permission.py` | 操作类型、来源、范围和确认策略 |
 | `security/audit.py` | 审计事件和 JSONL 持久化 |
 | `bootstrap.py` | 注册工具并注入权限和审计实现 |
@@ -193,7 +218,9 @@ delete
 
 ## 当前边界
 
-- LLM 只能提出有限 ToolCall 计划，不能跳过用户审核或 ToolManager。
+- LLM 只能提出有限 ToolCall 计划，不能跳过工具白名单、参数校验、
+  Permission 或 ToolManager。
+- 聊天 Tool 当前只覆盖目标与任务，不允许普通对话触发文件读写。
 - 没有 Python、Shell 或其他代码执行工具。
 - 没有浏览器、邮件、系统控制和多 Agent。
 - 外部授权范围只支持只读，并且重启失效。
@@ -205,12 +232,14 @@ delete
 ## 验证
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest -v test_tools test_architecture
+.\.venv\Scripts\python.exe -m pytest -q tests/unit/test_tools.py tests/unit/test_chat_tools.py tests/unit/test_architecture.py
 ```
 
 测试使用项目内隔离临时目录，覆盖：
 
-- 七种标准工具注册。
+- 七种文件工具和五种应用工具注册。
+- 聊天操作意图识别、应用 Tool 计划与真实数据库副作用。
+- 非操作型聊天不会触发 Tool。
 - 工作区内创建、读取和搜索。
 - 外部路径默认拒绝及显式只读授权。
 - 外部写入持续拒绝。

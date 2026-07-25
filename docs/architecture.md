@@ -34,6 +34,7 @@ personal_agent/
 ├── core/
 │   ├── agent.py
 │   ├── context.py
+│   ├── tool_runner.py
 │   ├── ports.py
 │   └── clock.py
 ├── llm/
@@ -55,6 +56,9 @@ personal_agent/
 │   ├── retriever.py
 │   ├── migrations/
 │   │   ├── 001_initial.sql
+│   │   ├── 002_daily_evidence.sql
+│   │   ├── 003_memory_provenance.sql
+│   │   ├── 004_personal_task_list.sql
 │   │   └── manager.py
 │   └── database.py
 ├── analysis/
@@ -62,9 +66,11 @@ personal_agent/
 │   └── weekly.py
 ├── interfaces/
 │   ├── cli.py
-│   └── channel.py
+│   ├── channel.py
+│   └── web.py
 ├── tools/
 │   ├── base.py
+│   ├── app_tool.py
 │   ├── file_tool.py
 │   ├── manager.py
 │   └── registry.py
@@ -99,6 +105,8 @@ personal_agent/
 纯核心层。
 
 - `Agent` 协调一次聊天。
+- `ChatToolRunner` 识别明确的目标/任务操作意图，让模型从应用 Tool
+  白名单生成计划，并通过 `ToolManager` 执行。
 - `ContextBuilder` 纯粹组装模型提示词。
 - `ConversationMemory` 定义核心所需的记忆能力。
 - 不允许导入 SQLite、Ollama、配置或 CLI。
@@ -159,11 +167,13 @@ complete(prompt: str, json_mode: bool = False) -> str
 
 用户接口层。
 
-- 读取命令行输入。
-- 显示结果。
+- 读取 CLI 或 Web 请求。
+- 显示终端结果，或返回 UTF-8 JSON/静态 UI。
 - 将业务操作委托给 Agent、分析服务和仓储。
+- `web.py` 同时提供 `ui/` 静态资源与 `/api/*`，默认只监听
+  `127.0.0.1:8765`。
 
-未来增加桌面界面时，可复用同一套核心和服务。
+CLI 与 Web UI 复用同一套核心、Tool、Memory 和 SQLite 服务。
 
 ### tools
 
@@ -173,8 +183,11 @@ complete(prompt: str, json_mode: bool = False) -> str
 - `ToolRegistry` 只注册工具，不判断权限。
 - `ToolManager` 是查找、授权、执行和审计的唯一入口。
 - `file_tool.py` 提供读取、搜索、创建、差异更新、回收、恢复和格式转换。
+- `app_tool.py` 提供目标和任务的查询、创建及状态更新。
+- 普通聊天遇到明确的目标/任务操作指令时，可以通过 `ChatToolRunner`
+  调用应用 Tool；文件 Tool 仍只通过显式 CLI/Orchestrator 工作流执行。
 
-LLM 当前不会自动调用工具，用户只能通过 CLI 显式操作。完整规则见
+LLM 不能绕过工具白名单、参数 Schema、权限检查或审计。完整规则见
 `tools.md`。
 
 ### security
@@ -189,11 +202,11 @@ LLM 当前不会自动调用工具，用户只能通过 CLI 显式操作。完�
 ## 依赖方向
 
 ```text
-main
+__main__
   ↓
 bootstrap
   ↓
-interfaces / application
+interfaces (CLI / Web) / application
   ↓
 agent / core / analysis
   ↓

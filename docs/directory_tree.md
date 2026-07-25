@@ -9,12 +9,17 @@ PersonalAgent/
 │   ├── analysis/                   # 日报与周报
 │   ├── application/                # 调度工作流
 │   ├── config/                     # 配置读取
-│   ├── core/                       # 聊天 Agent、上下文、端口和时钟
-│   ├── interfaces/                 # CLI 与 LocalChannel
+│   ├── core/                       # 聊天 Agent、上下文、ToolRunner 和时钟
+│   ├── interfaces/                 # CLI、LocalChannel 与 Web/API
 │   ├── llm/                        # 模型接口和适配器
 │   ├── memory/                     # 记忆、Evidence、Migration、备份和检索
 │   ├── security/                   # Permission 与 Audit
-│   └── tools/                      # ToolManager 和文件工具
+│   └── tools/                      # ToolManager、文件工具和应用工具
+├── ui/                             # 同源 Web 前端
+│   ├── index.html
+│   ├── app.js
+│   ├── styles.css
+│   └── README.md
 ├── tests/
 │   ├── conftest.py
 │   ├── database/
@@ -30,6 +35,8 @@ PersonalAgent/
 │   └── fixtures/
 ├── docs/
 │   ├── architecture.md
+│   ├── README.md
+│   ├── web_ui.md
 │   ├── memory.md
 │   ├── tools.md
 │   ├── orchestrator.md
@@ -61,6 +68,8 @@ PersonalAgent/
 ├── pytest.ini
 ├── .env.example
 ├── .gitignore
+├── 启动项目.bat
+├── 打开UI界面.bat
 └── .env                            # 本地私有配置，不提交
 ```
 
@@ -74,3 +83,7 @@ PersonalAgent/
   `memory/database.py`、`security/` 和 `core/clock.py` 承担。
 - `legacy/` 只用于迁移期回溯。所有正式 import 必须以
   `personal_agent` 开头。
+- Web UI 由 `personal_agent/interfaces/web.py` 与 API 同源提供，不能用
+  独立静态服务器替代。
+- `data/database/`、`data/backups/`、`.personal_agent/`、`.env` 和
+  `.venv/` 都属于本地运行数据，不提交到 Git。

@@ -1,13 +1,15 @@
 # Personal Agent
 
-本地、单用户、隐私优先的个人 Agent。项目提供实时聊天、带原文证据的每日
-分析、可追溯且由用户审核的长期记忆、受权限保护的文件工具，以及
-“LLM 规划 → 用户审核 → 工具执行 → 状态保存”的有限 Orchestrator。
+本地、单用户、隐私优先的个人 Agent。项目提供 Web UI 与 CLI、实时聊天、
+目标和任务清单、带原文证据的每日分析、可追溯且由用户审核的长期记忆、
+受权限保护的文件/应用工具，以及“LLM 规划 → Tool 执行 → 状态保存”的
+有限 Agent 工作流。
 
 ## 项目结构
 
 ```text
 personal_agent/        唯一业务源码
+ui/                    本地响应式 Web UI
 tests/                 分层自动化测试
 docs/                  架构、模块说明和项目报告
 data/database/         本地 SQLite 数据
@@ -17,7 +19,24 @@ legacy/                迁移期兼容代码，只读备份
 
 ## 启动
 
-先确保 Ollama 已运行，然后执行：
+先确保 Ollama 已运行。Windows 下推荐依次双击：
+
+1. `启动项目.bat`
+2. `打开UI界面.bat`
+
+浏览器默认打开：
+
+```text
+http://127.0.0.1:8765
+```
+
+也可以手动启动完整的 Web UI 和 API：
+
+```powershell
+.\.venv\Scripts\python.exe -m personal_agent web
+```
+
+启动 CLI：
 
 ```powershell
 .\.venv\Scripts\python.exe -m personal_agent
@@ -54,6 +73,8 @@ legacy/                迁移期兼容代码，只读备份
 
 ## 文档
 
+- [文档索引与当前状态](docs/README.md)
+- [Web UI 与 API](docs/web_ui.md)
 - [架构说明](docs/architecture.md)
 - [Memory 系统](docs/memory.md)
 - [Tool 系统](docs/tools.md)

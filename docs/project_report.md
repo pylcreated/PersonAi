@@ -5,13 +5,13 @@
 | 项目 | 内容 |
 | --- | --- |
 | 项目名称 | Personal Agent |
-| 当前版本定位 | V0.35 Reliable Personal Agent |
+| 当前版本定位 | V0.35 Reliable Personal Agent + Local Web UI |
 | 产品阶段 | 完成核心闭环，进入长期自用可靠性验证阶段 |
-| 运行方式 | Windows 本地单用户 CLI |
+| 运行方式 | Windows 本地单用户 CLI + Web UI |
 | 默认模型 | Ollama `gemma3:12b` |
 | 数据库 | 本地 SQLite |
-| 报告日期 | 2026-07-24 |
-| 自动化测试 | 80 passed，0 failed |
+| 报告日期 | 2026-07-25 |
+| 自动化测试 | 84 passed，0 failed |
 
 ## 二、项目概述
 
@@ -21,10 +21,9 @@ Personal Agent 是一款本地、单用户、隐私优先的个人 AI 助手。�
 核心流程：
 
 ```text
-长期目标
-    ↓
-每周任务
-    ↓
+长期目标        今天/本周任务清单
+    └──────────────┬──────────────┘
+                   ↓
 当天实时对话
     ↓
 次日结构化日报
@@ -72,7 +71,7 @@ Personal Agent 是一款本地、单用户、隐私优先的个人 AI 助手。�
 
 ### 4.1 本地实时对话
 
-用户直接在 CLI 中输入普通文字即可对话。
+用户可以在 CLI 或本地 Web UI 中输入普通文字进行对话。
 
 每轮处理流程：
 
@@ -81,19 +80,24 @@ Personal Agent 是一款本地、单用户、隐私优先的个人 AI 助手。�
 3. 加载当天聊天、活跃目标、本周任务、近期日报和相关正式记忆。
 4. 调用配置的模型生成回复。
 5. 保存助手回复。
-6. 在终端显示结果。
+6. 在终端或 Web UI 显示结果。
+
+如果用户明确要求查询、创建或更新目标/任务，`ChatToolRunner` 会让模型
+从应用 Tool 白名单生成计划，并通过 `ToolManager` 执行真实数据操作。非
+操作型消息继续走普通模型回复。
 
 实时上下文会限制历史长度，避免聊天无限增长。Ollama 不可用或返回异常时，
 程序向用户显示明确错误，不让整个进程直接崩溃。
 
-### 4.2 长期目标与每周任务
+### 4.2 长期目标与任务清单
 
 支持：
 
 - 首次运行创建多个长期目标。
 - 查看当前活跃目标。
-- 为指定目标创建本周任务。
-- 查看本周任务。
+- 创建独立的今天任务或本周任务。
+- 通过聊天 Tool 向指定长期目标添加本周任务。
+- 查看今天及本周任务清单。
 - 标记任务完成。
 - 将已完成任务重新打开。
 - 在周报中统计任务进度。
@@ -352,12 +356,12 @@ personal_agent/
 ├── analysis/            # 日报与周报用例
 ├── application/         # 调度、重试和启动补偿
 ├── config/              # 环境和运行配置
-├── core/                # 对话 Agent、上下文和抽象端口
-├── interfaces/          # CLI 与本地消息输出
+├── core/                # 对话 Agent、上下文、ChatToolRunner 和抽象端口
+├── interfaces/          # CLI、本地消息与 Web/API
 ├── llm/                 # LLM 接口和适配器
 ├── memory/              # Memory、Evidence、SQLite、Migration 和备份
 ├── security/            # Permission 与 Audit
-└── tools/               # 工具协议、注册和统一执行
+└── tools/               # 工具协议、文件/应用工具和统一执行
 ```
 
 ### 5.2 依赖方向
@@ -380,7 +384,7 @@ Ollama / SQLite / 本地文件系统
 
 - 当前使用 Ollama 还是其他模型。
 - 数据是否具体存储在 SQLite。
-- 用户通过 CLI 还是未来其他界面操作。
+- 用户通过 CLI 还是 Web UI 操作。
 - 文件工具如何实现。
 
 具体实现只在 `bootstrap.py` 中选择和组装。
@@ -389,15 +393,15 @@ Ollama / SQLite / 本地文件系统
 
 | 模块 | 职责 |
 | --- | --- |
-| `core` | 单轮对话协调和上下文构建 |
+| `core` | 单轮对话协调、上下文构建和聊天 Tool 路由 |
 | `llm` | 统一模型接口与不同提供商适配 |
 | `memory` | 对话存储、日报、Evidence、候选、正式记忆和检索 |
 | `analysis` | 日报及周报业务用例 |
 | `application` | 定时调度、失败重试和启动补偿 |
 | `agent` | 有限计划、审核、风险、执行和状态 |
-| `tools` | 工具定义、注册、预览和真实副作用 |
+| `tools` | 文件/应用工具定义、注册、预览和真实副作用 |
 | `security` | 路径权限、危险操作确认和审计 |
-| `interfaces` | CLI 输入、命令解析和结果展示 |
+| `interfaces` | CLI 输入、Web/API、静态 UI 和结果展示 |
 
 ## 六、数据库与数据可靠性
 
@@ -413,7 +417,8 @@ data/database/goals_assistant.db
 | --- | --- |
 | `schema_version` | 已执行 Migration 版本 |
 | `goals` | 长期目标 |
-| `tasks` | 每周任务 |
+| `tasks` | 与长期目标关联的每周任务 |
+| `personal_tasks` | 独立的今天/本周任务清单 |
 | `settings` | 本地提醒和初始化设置 |
 | `error_log` | 定时任务错误 |
 | `chat_sessions` | 按自然日组织的临时会话 |
@@ -536,7 +541,7 @@ Ollama 模式不需要 API Key，对话数据不会发送到云端。切换到�
 ### 9.1 当前结果
 
 ```text
-80 passed
+84 passed
 0 failed
 ```
 
@@ -615,6 +620,20 @@ ollama list
 
 ### 10.3 启动 Personal Agent
 
+推荐双击根目录的 `启动项目.bat` 和 `打开UI界面.bat`。Web UI 默认地址：
+
+```text
+http://127.0.0.1:8765
+```
+
+手动启动 Web UI 与 API：
+
+```powershell
+.\.venv\Scripts\python.exe -m personal_agent web
+```
+
+启动 CLI：
+
 ```powershell
 .\.venv\Scripts\python.exe -m personal_agent
 ```
@@ -653,7 +672,8 @@ ollama list
 
 项目还不能定义为成熟发布产品，主要原因：
 
-- 仍然只有 CLI。
+- Web UI 已可用，但 HTTP API 尚缺少完整的自动化契约测试。
+- Web 服务仅面向本机，没有登录、HTTPS 或公网部署能力。
 - 缺少连续 30 天真实使用数据。
 - 超长单日聊天尚未分块分析。
 - 跨午夜仍在生成的对话缺少会话级锁。
