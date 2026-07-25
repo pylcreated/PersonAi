@@ -29,6 +29,8 @@ http://127.0.0.1:8765
 | 文档 | 内容 |
 | --- | --- |
 | [Personal_Agent_项目完整文档.md](Personal_Agent_项目完整文档.md) | 去重整合后的统一项目文档 |
+| [Personal_Agent_AI协作与项目演进全记录.md](Personal_Agent_AI协作与项目演进全记录.md) | 根据历史 GPT/DeepSeek 对话、Agent 反馈、Codex 协作及当前源码整理的完整项目纪实 |
+| [Personal_Agent_AI协作与项目演进全记录.docx](Personal_Agent_AI协作与项目演进全记录.docx) | 适合阅读、存档和分享的正式 Word 版 |
 | [web_ui.md](web_ui.md) | Web UI、API、端口和启动方式 |
 | [architecture.md](architecture.md) | 分层架构与依赖方向 |
 | [directory_tree.md](directory_tree.md) | 当前项目目录 |
@@ -42,8 +44,9 @@ http://127.0.0.1:8765
 ## 历史材料
 
 `gpt_project_brief.md`、`gpt_review_request.md` 和 `ai_collaboration/`
-记录了早期设计及评审过程，其中可能保留当时尚未实现的能力描述。它们用于
-追溯决策，不作为当前运行方式的权威说明。
+保留早期设计及评审原始材料，其中可能包含当时尚未实现的能力描述。
+“AI 协作与项目演进全记录”已把这些资料与后续 Codex 协作、当前源码和测试
+结果统一整理；原始材料继续用于追溯，不作为当前运行方式的权威说明。
 
 当前运行和接口信息以“项目完整文档”、本索引、根目录 `README.md` 及源码
 为准。分专题文档用于补充模块细节。

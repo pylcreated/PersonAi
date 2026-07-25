@@ -37,6 +37,8 @@ PersonalAgent/
 │   ├── architecture.md
 │   ├── README.md
 │   ├── Personal_Agent_项目完整文档.md
+│   ├── Personal_Agent_AI协作与项目演进全记录.md
+│   ├── Personal_Agent_AI协作与项目演进全记录.docx
 │   ├── web_ui.md
 │   ├── memory.md
 │   ├── tools.md
