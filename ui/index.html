@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f1eb">
+  <title>栖心 · Personal Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=20260725-8">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark bot-mark" aria-hidden="true">
+          <i></i><span></span><span></span>
+        </div>
+        <div>
+          <strong>Personal AI</strong>
+          <small>PERSONAL AGENT</small>
+        </div>
+      </div>
+
+      <nav class="nav-list" aria-label="主导航">
+        <button class="nav-item active" data-page="today">
+          <svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/><path d="M9 20v-5h6v5"/></svg>
+          <span>今日</span>
+        </button>
+        <button class="nav-item" data-page="chat">
+          <svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-4 2V7a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
+          <span>对话</span><i class="live-dot"></i>
+        </button>
+        <button class="nav-item" data-page="goals">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m15 9 5-5M16 4h4v4"/></svg>
+          <span>目标与任务</span>
+        </button>
+        <button class="nav-item" data-page="insights">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-7"/><path d="m3 14 6-5 5 3 7-7"/></svg>
+          <span>回顾</span>
+        </button>
+        <button class="nav-item" data-page="memory">
+          <svg viewBox="0 0 24 24"><path d="M7 5a3 3 0 0 1 5-2 3 3 0 0 1 5 2 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-5 2 3 3 0 0 1-5-2 3 3 0 0 1-2-5 3 3 0 0 1 2-5Z"/><path d="M12 3v14M7 8h5m0 4h5"/></svg>
+          <span>记忆</span><b id="navMemoryCount">0</b>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="privacy-card">
+          <div class="privacy-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.4 2.8 8.1 7 10 4.2-1.9 7-5.6 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
+          </div>
+          <div><strong>数据安全</strong><small>全部保存在本地</small></div>
+          <span class="status-pill">正常</span>
+        </div>
+        <button class="nav-item" data-page="settings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.8-1L14.4 3h-4.8l-.4 3.1a8 8 0 0 0-1.8 1l-2.4-1-2 3.4L5.1 11a7 7 0 0 0 0 2L3 14.5l2 3.4 2.4-1a8 8 0 0 0 1.8 1l.4 3.1h4.8l.4-3.1a8 8 0 0 0 1.8-1l2.4 1 2-3.4-2.1-1.5a7 7 0 0 0 .1-1Z"/></svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" aria-label="打开菜单">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="date-nav">
+          <span>2026年7月24日 · 星期五</span>
+        </div>
+        <div class="top-actions">
+          <div class="model-status" id="backendStatus"><i></i><span>正在连接本地服务</span></div>
+          <button class="avatar" aria-label="个人账户">林</button>
+        </div>
+      </header>
+
+      <section class="page active" id="page-today">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">GOOD MORNING</p>
+            <h1>早上好，今天想推进什么？</h1>
+            <p>保持节奏，不必赶路。你本周已经完成了 4 项任务。</p>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button class="quick-card quick-purple" data-open-chat>
+            <span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M20 15a4 4 0 0 1-4 4H8l-4 2V7a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg></span>
+            <span><small>记录与思考</small><strong>智能对话</strong><em>随时和我聊聊 →</em></span>
+          </button>
+          <button class="quick-card quick-blue" data-page-link="goals">
+            <span class="quick-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m15 9 5-5M16 4h4v4"/></svg></span>
+            <span><small>目标与行动</small><strong>本周计划</strong><em id="quickTaskCount">正在读取任务 →</em></span>
+          </button>
+          <button class="quick-card quick-green" data-page-link="memory">
+            <span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M7 5a3 3 0 0 1 5-2 3 3 0 0 1 5 2 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-5 2 3 3 0 0 1-5-2 3 3 0 0 1-2-5 3 3 0 0 1 2-5Z"/><path d="M12 3v14M7 8h5m0 4h5"/></svg></span>
+            <span><small>长期理解</small><strong>记忆中心</strong><em id="quickMemoryCount">正在读取记忆 →</em></span>
+          </button>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="left-column">
+            <article class="card focus-card">
+              <div class="card-heading">
+                <div><p class="eyebrow">TODAY'S FOCUS</p><h2>今日重点</h2></div>
+                <button class="text-button" id="manageTasksButton">管理任务 <span>→</span></button>
+              </div>
+              <div class="task-list" id="todayTaskList">
+                <label class="task-row">
+                  <input type="checkbox"><span class="checkmark"></span>
+                  <span class="task-copy"><strong>完成个人 Agent 的 UI 信息架构</strong><small><i class="tag-dot coral"></i>产品开发 · 预计 2 小时</small></span>
+                  <button class="row-menu" aria-label="更多">•••</button>
+                </label>
+                <label class="task-row">
+                  <input type="checkbox"><span class="checkmark"></span>
+                  <span class="task-copy"><strong>整理本周的项目开发记录</strong><small><i class="tag-dot blue"></i>工作复盘 · 预计 40 分钟</small></span>
+                  <button class="row-menu" aria-label="更多">•••</button>
+                </label>
+                <label class="task-row done">
+                  <input type="checkbox" checked><span class="checkmark"></span>
+                  <span class="task-copy"><strong>运行完整测试并检查数据库备份</strong><small><i class="tag-dot green"></i>系统维护 · 已完成</small></span>
+                  <button class="row-menu" aria-label="更多">•••</button>
+                </label>
+              </div>
+              <button class="add-task" id="addTaskButton"><span>＋</span> 添加今天的任务</button>
+            </article>
+
+            <article class="card report-card">
+              <div class="card-heading">
+                <div><p class="eyebrow">YESTERDAY, REFLECTED</p><h2>昨日回顾</h2></div>
+                <button class="text-button" id="openDailyReport">查看完整日报 <span>→</span></button>
+              </div>
+              <blockquote>“你完成了核心架构的收尾，并把注意力从增加功能转向了真实使用验证。”</blockquote>
+              <div class="report-facts">
+                <div><span class="fact-icon">↗</span><p><small>主要进展</small><strong>修复迁移与备份流程，80 项测试全部通过</strong></p></div>
+                <div><span class="fact-icon warning">!</span><p><small>值得留意</small><strong>连续工作时间较长，晚间专注度有所下降</strong></p></div>
+                <div><span class="fact-icon action">→</span><p><small>建议行动</small><strong>先完成产品界面，再开始 30 天自用验证</strong></p></div>
+              </div>
+              <div class="evidence-note">
+                <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.4 2.8 8.1 7 10 4.2-1.9 7-5.6 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
+                以上结论均有原始对话证据支持
+                <span>可信度 92%</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="right-column">
+            <article class="card progress-card">
+              <div class="card-heading"><div><p class="eyebrow">THIS WEEK</p><h2>本周进度</h2></div><button class="icon-button" id="addTaskShortcut" aria-label="添加任务"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+              <div class="progress-ring-wrap">
+                <div class="progress-ring" style="--progress: 67"><div><strong>67%</strong><small>4 / 6 已完成</small></div></div>
+              </div>
+              <div class="goal-list" id="weeklyGoalList">
+                <div><span><i class="tag-dot coral"></i>完成 Agent V0.35</span><strong>3 / 4</strong></div>
+                <div><span><i class="tag-dot blue"></i>建立稳定复盘习惯</span><strong>1 / 2</strong></div>
+              </div>
+            </article>
+
+            <article class="card memory-card">
+              <div class="memory-illustration"><span></span><span></span><span></span></div>
+              <div class="memory-card-copy"><span class="badge">3 条待审核</span><h2>新的记忆候选</h2><p>Agent 从近期对话中发现了一些可能值得长期保留的信息。</p></div>
+              <button class="secondary-button" data-page-link="memory">前往审核 <span>→</span></button>
+            </article>
+
+            <article class="prompt-card">
+              <p class="eyebrow">A SMALL PROMPT</p>
+              <p>如果今天只能完成一件事，什么会让你在晚上感到踏实？</p>
+              <button data-open-chat>聊聊这个问题 <span>↗</span></button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-chat">
+        <div class="section-title"><p class="eyebrow">CONVERSATION</p><h1>和今天聊一聊</h1><p>随手记录想法、进展或卡点，Agent 会在明天生成有证据的日报。</p></div>
+        <div class="chat-layout card">
+            <div class="chat-stream" id="chatStream">
+            <div class="message assistant"><div class="message-avatar">栖</div><div><small>栖心 · 09:12</small><p>早上好。今天你想先推进个人 Agent 的界面，还是先整理开发记录？</p></div></div>
+            <div class="message user"><div><small>你 · 09:14</small><p>先把 UI 做出来。我希望它安静、可信，不要像常见的 AI 聊天产品。</p></div></div>
+            <div class="message assistant"><div class="message-avatar">栖</div><div><small>栖心 · 09:14</small><p>明白了。我会把“目标—行动—回顾—记忆”作为主线，让对话融入每天的节奏，而不是占据整个产品。</p><div class="source-chip">已关联 · 产品开发目标</div></div></div>
+          </div>
+          <form class="composer" id="chatForm">
+            <textarea id="chatInput" rows="1" placeholder="现在在想什么？"></textarea>
+            <div class="composer-actions"><span>原始消息将在日报安全生成后删除</span><button type="submit" aria-label="发送"><svg viewBox="0 0 24 24"><path d="m5 12 14-7-5 14-2-5z"/><path d="m12 14 7-9"/></svg></button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="page" id="page-goals">
+        <div class="section-title"><p class="eyebrow">DIRECTION</p><h1>目标与任务</h1><p>长期目标负责方向，今天与本周任务作为独立清单管理。</p></div>
+        <div class="simple-grid" id="goalsGrid">
+          <article class="card goal-card"><span class="goal-number">01</span><h2>完成可靠的个人 Agent</h2><p>建立本地、可信、可持续使用的个人智能系统。</p><div class="goal-meta"><span>本周 3 / 4</span><div><i style="width:75%"></i></div></div></article>
+          <article class="card goal-card"><span class="goal-number">02</span><h2>建立稳定复盘习惯</h2><p>通过低摩擦记录，持续理解自己的行动模式。</p><div class="goal-meta"><span>本周 1 / 2</span><div><i style="width:50%"></i></div></div></article>
+          <button class="card new-goal"><span>＋</span><strong>添加长期目标</strong><small>为新的方向留一个位置</small></button>
+        </div>
+        <article class="card checklist-board">
+          <div class="checklist-heading">
+            <div><p class="eyebrow">PERSONAL CHECKLIST</p><h2>任务清单</h2><p>任务独立于长期目标，可以安排为今天或本周完成。</p></div>
+            <button class="primary-button" id="addChecklistTask"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加任务</button>
+          </div>
+          <div class="checklist-summary"><span id="todayChecklistCount">今天 0 项</span><span id="weekChecklistCount">本周 0 项</span></div>
+          <div class="goal-task-list" id="goalTaskList"></div>
+        </article>
+      </section>
+
+      <section class="page" id="page-insights">
+        <div class="section-title"><p class="eyebrow">REFLECTION</p><h1 id="insightHeading">回顾</h1><p id="insightSummary">从每天的真实记录里，看见持续发生的变化。</p></div>
+        <div class="card empty-feature" id="insightFeature"><div class="week-bars"><i style="height:38%"></i><i style="height:58%"></i><i style="height:46%"></i><i style="height:82%"></i><i style="height:68%"></i><i style="height:28%"></i><i style="height:15%"></i></div><h2 id="insightFeatureTitle">本周保持了稳定推进</h2><p id="insightFeatureCopy">点击下方按钮，根据真实日报与任务生成本周回顾。</p><pre id="weeklyReportOutput"></pre><button class="secondary-button" id="generateWeeklyButton">生成本周回顾</button></div>
+      </section>
+
+      <section class="page" id="page-memory">
+        <div class="section-title inline"><div><p class="eyebrow">MEMORY REVIEW</p><h1>记忆审核</h1><p>只有经过你的确认，信息才会成为正式长期记忆。</p></div><span class="review-count" id="reviewCount">0 条待处理</span></div>
+        <div class="memory-section-heading"><div><h2>每日摘要</h2><p>每天聊天分析成功后保留的结构化回顾，不需要审核。</p></div><span id="dailySummaryCount">0 天</span></div>
+        <div class="daily-summary-list" id="dailySummaryList"></div>
+        <div class="memory-section-heading"><div><h2>待审核候选</h2><p>每日分析完成后，可能值得长期保留的信息会出现在这里。</p></div></div>
+        <div class="memory-review-list" id="memoryReviewList">
+          <article class="card review-item"><div class="review-type">偏好</div><div class="review-copy"><small>候选记忆 #18 · 来自 2 条对话</small><h2>偏好安静、克制且具有明确层级的产品界面。</h2><button class="evidence-toggle">查看原始证据 <span>⌄</span></button><div class="evidence-detail">“我希望它安静、可信，不要像常见的 AI 聊天产品。”<small>今天 09:14 · 消息 #842</small></div></div><div class="review-actions"><button class="reject">忽略</button><button class="edit">编辑</button><button class="accept">确认保存</button></div></article>
+          <article class="card review-item"><div class="review-type project">项目</div><div class="review-copy"><small>候选记忆 #17 · 来自 3 条对话</small><h2>Personal Agent 已进入 30 天真实自用验证阶段。</h2><button class="evidence-toggle">查看原始证据 <span>⌄</span></button><div class="evidence-detail">“核心闭环已经完成，下一阶段主要验证真实使用可靠性。”<small>昨天 22:31 · 消息 #827</small></div></div><div class="review-actions"><button class="reject">忽略</button><button class="edit">编辑</button><button class="accept">确认保存</button></div></article>
+          <article class="card review-item"><div class="review-type goal">目标</div><div class="review-copy"><small>候选记忆 #16 · 来自 1 条对话</small><h2>近期优先完成产品界面，再开始长期使用测试。</h2><button class="evidence-toggle">查看原始证据 <span>⌄</span></button><div class="evidence-detail">“先完成产品界面，再开始 30 天自用验证。”<small>昨天 21:48 · 消息 #816</small></div></div><div class="review-actions"><button class="reject">忽略</button><button class="edit">编辑</button><button class="accept">确认保存</button></div></article>
+        </div>
+        <div class="memory-section-heading active-heading"><div><h2>已保存长期记忆</h2><p>这些记忆会在之后的对话中作为背景信息使用。</p></div><span id="activeMemoryCount">0 条</span></div>
+        <div class="active-memory-grid" id="activeMemoryList"></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="section-title"><p class="eyebrow">PREFERENCES</p><h1>设置</h1><p>管理本地模型、数据与每日节奏。</p></div>
+        <div class="settings-list card">
+          <div><span class="settings-icon">AI</span><p><strong>本地模型</strong><small id="modelSettingValue">正在读取模型配置</small></p><button id="configureModelButton">配置</button></div>
+          <div><span class="settings-icon">时</span><p><strong>每日提醒</strong><small id="reminderSettingValue">正在读取提醒时间</small></p><button id="configureReminderButton">修改</button></div>
+          <div><span class="settings-icon">备</span><p><strong>数据备份</strong><small id="backupSettingValue">本地 SQLite 安全备份</small></p><button id="manageBackupsButton">管理</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="formModal" aria-hidden="true">
+    <section class="form-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" type="button" aria-label="关闭">×</button>
+      <p class="eyebrow" id="modalEyebrow">NEW ITEM</p>
+      <h2 id="modalTitle">添加内容</h2>
+      <p class="modal-description" id="modalDescription"></p>
+      <form id="modalForm">
+        <label class="modal-field" id="goalSelectField">
+          <span id="modalSelectLabel">任务类型</span>
+          <select id="modalGoalSelect"></select>
+        </label>
+        <label class="modal-field">
+          <span id="modalInputLabel">名称</span>
+          <input id="modalTextInput" type="text" maxlength="200" autocomplete="off">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="modal-cancel" id="modalCancel">取消</button>
+          <button type="submit" class="modal-submit" id="modalSubmit">保存</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="./app.js?v=20260725-8"></script>
+</body>
+</html>
